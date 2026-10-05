@@ -1,0 +1,1127 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Darbai">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff7a00'/%3E%3Cpath d='M12 26h22v18H12zM34 32h9l7 8v4H34z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='46' r='4' fill='white'/%3E%3Ccircle cx='43' cy='46' r='4' fill='white'/%3E%3C/svg%3E">
+<title>SAREK darbai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#f4f6f8; --paper:#ffffff; --ink:#1e2329; --mute:#5d6873; --line:#dfe3e8;
+  --pick:#ff7a00; --pick-ink:#a84f00; --ret:#2f6db5; --ret-ink:#24589a;
+  --field:#fbfcfd; --hover:rgba(30,35,41,.06); --focus:#1f6feb; --danger:#c0392b;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#101316; --paper:#171a1e; --ink:#e6e9ed; --mute:#9aa4ae; --line:#2b3137;
+    --pick:#ff8a1f; --pick-ink:#ffaa5c; --ret:#6aa3e8; --ret-ink:#93bdf0;
+    --field:#1d2126; --hover:rgba(230,233,237,.08); --focus:#7fb0ff; --danger:#ff7b6b; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#101316; --paper:#171a1e; --ink:#e6e9ed; --mute:#9aa4ae; --line:#2b3137;
+  --pick:#ff8a1f; --pick-ink:#ffaa5c; --ret:#6aa3e8; --ret-ink:#93bdf0;
+  --field:#1d2126; --hover:rgba(230,233,237,.08); --focus:#7fb0ff; --danger:#ff7b6b; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100%;background:var(--page);color:var(--ink);
+  font-family:Archivo,"Arial Narrow",Arial,system-ui,sans-serif;font-size:15px;line-height:1.45;
+  font-variant-numeric:tabular-nums;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 20px 96px}
+
+/* every text is a field: looks like text, edits in place */
+.f{display:block;width:100%;margin:0;padding:0;border:0;border-radius:4px;background:transparent;
+   color:inherit;font:inherit;line-height:inherit;letter-spacing:inherit;resize:none;overflow:hidden;
+   white-space:pre-wrap;overflow-wrap:break-word;-webkit-appearance:none;appearance:none}
+textarea.f:focus{outline:2px solid var(--route,var(--focus));outline-offset:3px;background:var(--field)}
+@media (hover:hover){textarea.f:hover{background:var(--hover)}}
+textarea.f::placeholder{color:var(--mute);opacity:.7}
+textarea.f:not(:focus)::placeholder{color:transparent}
+div.f a{color:inherit;text-decoration-thickness:1px;text-underline-offset:2px}
+div.f a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* header */
+.top{display:flex;gap:14px;align-items:flex-start;margin-bottom:6px}
+.mark{flex:none;width:44px;height:44px;border-radius:12px;background:var(--pick);color:#fff;display:grid;place-items:center}
+.mark svg{width:28px;height:28px}
+.hdr{flex:1;min-width:0;--route:var(--pick)}
+.title{font-size:30px;line-height:1.08;font-weight:800;font-stretch:88%;letter-spacing:-.01em}
+.lede{margin-top:4px;color:var(--mute);max-width:62ch}
+.pdfbtn{flex:none;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
+  background:var(--paper);color:var(--ink);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.pdfbtn svg{width:18px;height:18px;color:var(--pick)}
+.pdfbtn:hover{border-color:var(--pick)}
+.pdfbtn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pdfbtn[disabled]{opacity:.6;cursor:progress}
+.pdfbtn[hidden]{display:none}
+.status{min-height:1.4em;margin:10px 0 0 58px;font-size:13px;color:var(--mute)}
+.status[data-state="ok"]{color:var(--ret-ink)}
+.status[data-state="err"]{color:var(--danger)}
+
+/* day blocks */
+.day{margin-top:26px;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.day.pick{--route:var(--pick);--route-ink:var(--pick-ink)}
+.day.ret{--route:var(--ret);--route-ink:var(--ret-ink)}
+.dayhd{display:flex;gap:12px;align-items:center;padding:14px 18px;border-bottom:3px solid var(--route)}
+.dayhd > svg{flex:none;width:26px;height:26px;color:var(--route)}
+.day.ret .dayhd > svg{transform:scaleX(-1)}
+.dayhd > div{flex:1;min-width:0}
+.dtitle{font-size:21px;line-height:1.15;font-weight:800;font-stretch:88%;color:var(--route-ink)}
+.dsub{margin-top:2px;font-size:14px;color:var(--mute)}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* table */
+table.run{width:100%;border-collapse:collapse;table-layout:fixed}
+.run th{text-align:left;vertical-align:top;font-weight:600;padding:10px 12px 8px;border-bottom:1px solid var(--line)}
+.th{font-size:13px;font-weight:600;color:var(--mute)}
+.run td{vertical-align:top;padding:12px 12px 14px;border-bottom:1px solid var(--line)}
+.run tbody tr:last-child td{border-bottom:0}
+.run col.k-time{width:126px}
+.run col.k-stop{width:21%}
+.run col.k-photos{width:30%}
+.run col.k-act{width:44px}
+.run col.k-text{width:15%}
+.run th.first{padding-left:34px}
+.thw{position:relative}
+.editable .thw{padding-right:28px}
+.thw .kbtn{position:absolute;right:-6px;top:-5px}
+
+/* the route: a line down the first column, a stop marker per row */
+.run td.first{position:relative;padding-left:34px}
+.run td.first::before{content:"";position:absolute;left:14px;top:0;bottom:0;width:3px;background:var(--route)}
+.run tbody tr:first-child td.first::before{top:20px}
+.run tbody tr:last-child td.first::before{bottom:auto;height:20px}
+.run tbody tr:only-child td.first::before{display:none}
+.run td.first::after{content:"";position:absolute;left:8px;top:14px;width:15px;height:15px;border-radius:50%;background:var(--paper);border:3px solid var(--route)}
+.run tr.emptyrow td::before,.run tr.emptyrow td::after{display:none}
+.t{font-size:19px;line-height:1.15;font-weight:800;font-stretch:80%;color:var(--route-ink)}
+.t.word{font-size:16px;font-stretch:68%}
+
+.nm{font-size:16px;font-weight:700;line-height:1.25}
+.dt{font-size:14px;margin-top:2px}
+.ck{margin-top:6px;color:var(--mute);font-size:14px}
+
+.ph{min-height:44px;font-size:16px;line-height:1.4;background:var(--field);border:1.5px dashed var(--route);border-radius:9px;padding:8px 10px}
+textarea.ph:focus{border-style:solid;outline-offset:1px}
+.ph.ro{border-style:solid;border-color:var(--line)}
+.lbl{display:none}
+
+/* row and column menus */
+.run td.act{padding:8px 4px;text-align:center}
+.kbtn{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--mute);cursor:pointer}
+.kbtn svg{width:18px;height:18px}
+.kbtn:hover,.kbtn[aria-expanded="true"]{background:var(--hover);color:var(--ink)}
+.kbtn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.actw{display:flex;flex-direction:column;align-items:center;gap:2px}
+.grip{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--mute);
+  cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.grip svg{width:16px;height:16px}
+.grip:hover{background:var(--hover);color:var(--ink)}
+.grip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.run tr.dragging td{opacity:.3}
+.run tr.moved td{animation:moved .9s ease-out}
+@keyframes moved{from{background:var(--hover)}to{background:transparent}}
+.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;max-width:80vw;padding:10px 14px;border-radius:12px;background:var(--paper);color:var(--ink);
+  border:2px solid var(--pick);box-shadow:0 14px 34px rgba(0,0,0,.28);font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ghost.ret{border-color:var(--ret)}
+.dropline{position:fixed;z-index:39;height:4px;margin-top:-2px;border-radius:2px;pointer-events:none;background:var(--pick)}
+.dropline.ret{background:var(--ret)}
+body.is-dragging,body.is-dragging *{cursor:grabbing!important;-webkit-user-select:none;user-select:none}
+.pics{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pics[hidden]{display:none}
+.pic{position:relative;flex:none;width:112px;height:112px;padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--hover);cursor:pointer}
+.pic img{display:block;width:100%;height:100%;object-fit:cover}
+.pic:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pic.add{display:grid;place-items:center;border:1.5px dashed var(--route);background:transparent;color:var(--route-ink)}
+.pic.add svg{width:34px;height:34px}
+.pic.busy::after{content:"";position:absolute;inset:0;margin:auto;width:20px;height:20px;border-radius:50%;border:2.5px solid var(--route);border-right-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lightbox{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,12,14,.94);
+  padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.lightbox[hidden]{display:none}
+.lightbox img{max-width:100%;max-height:calc(100% - 70px);object-fit:contain;border-radius:8px}
+.lbbar{display:flex;gap:10px;margin-top:14px}
+.lbbar button{padding:11px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.lbbar button.danger{border-color:#ff8a7d;color:#ffa79d}
+.lbbar button[hidden]{display:none}
+.addrow{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--route);border-radius:9px;background:transparent;color:var(--route-ink);font:inherit;font-weight:600;cursor:pointer}
+.emptyrow td{padding:16px 18px;color:var(--mute)}
+.menu{position:fixed;z-index:20;min-width:190px;padding:6px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.22)}
+.menu[hidden]{display:none}
+.menu button{display:block;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:15px;cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:var(--hover);outline:none}
+.menu button.danger{color:var(--danger)}
+.menu button[disabled]{opacity:.45;cursor:default;background:transparent}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;gap:10px;align-items:center;
+  max-width:calc(100% - 24px);padding:8px 8px 8px 16px;background:var(--ink);color:var(--paper);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.25);font-size:15px}
+.toast[hidden]{display:none}
+.toast button{border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:8px 10px;cursor:pointer}
+
+@media (pointer: coarse){
+  .kbtn,.grip{width:36px;height:36px}
+  .pic{width:128px;height:128px}
+  .editable .thw{padding-right:34px}
+  .run col.k-time{width:134px}
+  .run col.k-act{width:48px}
+}
+@media (max-width: 760px){
+  .wrap{padding:18px 14px 96px}
+  .run col.k-time{width:118px}
+  .run col.k-stop{width:21%}
+  .run col.k-photos{width:26%}
+  .run th{padding:9px 8px 7px}
+  .run td{padding:11px 8px 13px}
+  .run th.first,.run td.first{padding-left:30px}
+  .run td.first::before{left:12px}
+  .run td.first::after{left:6px}
+  .t{font-size:17px}
+  .t.word{font-size:14px;font-stretch:68%}
+  .nm{font-size:15px}
+  .dt,.ck{font-size:13.5px}
+  .ph{padding:7px 8px}
+}
+@media (max-width: 760px) and (pointer: coarse){
+  .run col.k-time{width:126px}
+}
+/* narrow: every row becomes a stop on the route */
+@media (max-width: 540px){
+  .wrap{padding:16px 12px 96px}
+  .top{flex-wrap:wrap}
+  .hdr{flex:1 1 calc(100% - 58px)}
+  .pdfbtn{margin-left:58px}
+  .title{font-size:26px}
+  .status{margin-left:0}
+  .dayhd{padding:12px 14px}
+  .run{min-width:0!important}
+  .run, .run tbody, .run thead, .run thead tr{display:block}
+  .run thead{display:none}
+  .editable .day:first-child .run thead{display:block;padding:10px 14px 10px;border-bottom:1px solid var(--line)}
+  .editable .day:first-child .run thead::before{content:"Stulpeliai";display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:2px}
+  .run thead th{display:block;padding:4px 0;border:0}
+  .run th.first{padding-left:0}
+  .run th.act{display:none}
+  .run tbody tr{display:block;position:relative;padding:14px 14px 16px 44px;border-bottom:1px solid var(--line)}
+  .editable .run tbody tr{padding-right:46px}
+  .run tbody tr:last-child{border-bottom:0}
+  .run tbody tr::before{content:"";position:absolute;left:18px;top:0;bottom:0;width:3px;background:var(--route)}
+  .run tbody tr:first-child::before{top:22px}
+  .run tbody tr:last-child::before{bottom:auto;height:22px}
+  .run tbody tr:only-child::before,.run tr.emptyrow::before{display:none}
+  .run td{display:block;padding:0;border:0}
+  .run td.first{position:static;padding:0}
+  .run td.first::before{display:none}
+  .run td.first::after{left:12px;top:16px}
+  .run td.act{position:absolute;top:8px;right:6px;padding:0}
+  .thw .kbtn{right:0;top:-4px}
+  .run tr.emptyrow{padding:14px}
+  .t{font-size:19px}
+  .t.word{font-size:16px;font-stretch:80%}
+  .nm{font-size:16px}
+  .run td.k-stop{margin-top:2px}
+  .run td.k-job{margin-top:8px}
+  .run td.k-photos,.run td.k-text{margin-top:10px}
+  .run td.first.k-photos,.run td.first.k-text{margin-top:0}
+  .lbl{display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:4px}
+}
+/* touch screens: fields at 16px or more, so iPhone doesn't zoom in while typing */
+@media (pointer: coarse){
+  .lede,.dsub,.th,.nm,.dt,.jb,.ck,.tx,.t.word{font-size:16px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation-duration:.01s!important}}
+.dayhd > .kbtn{flex:none;align-self:flex-start}
+.dayfoot{padding:10px 18px 14px;border-top:1px solid var(--line)}
+.adddaybtn{display:block;width:100%;margin-top:18px;padding:14px;border:1.5px dashed var(--line);border-radius:14px;background:transparent;color:var(--mute);font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.adddaybtn:hover{border-color:var(--pick);color:var(--pick-ink)}
+div.f.ro:empty{display:none}
+@media (max-width: 540px){
+  body:not(.editable) .run td.k-photos:not(:has(.pics:not([hidden]))):not(:has(div.f:not(:empty))),
+  body:not(.editable) .run td.k-text:not(:has(div.f:not(:empty))){display:none}
+}
+.status[data-state="live"]{color:var(--mute)}
+.status[data-state="live"]::before{content:"";display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:#2e9e5b;vertical-align:1px}
+.mark{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;cursor:default}
+.mark .ring{position:absolute;inset:-4px;width:52px;height:52px;opacity:0;pointer-events:none;transform:rotate(-90deg)}
+.mark .ring circle{fill:none;stroke:var(--pick);stroke-width:3;stroke-dasharray:100;stroke-dashoffset:100}
+.mark.holding .ring{opacity:1}
+.mark.holding .ring circle{animation:ringfill 8s linear forwards}
+@keyframes ringfill{to{stroke-dashoffset:0}}
+.stopedit{display:inline-block;margin:4px 0 0 58px;padding:6px 0;border:0;background:none;color:var(--mute);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
+.stopedit[hidden]{display:none}
+.gate{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(10,12,14,.55)}
+.gate[hidden]{display:none}
+.gatebox{width:100%;max-width:340px;padding:22px 20px 16px;border-radius:16px;background:var(--paper);color:var(--ink);box-shadow:0 18px 44px rgba(0,0,0,.3);text-align:center}
+.gtitle{margin:0 0 6px;font-size:17px;font-weight:700}
+.gmsg{min-height:1.3em;margin:0 0 12px;font-size:14px;color:var(--danger)}
+.gbtn{display:block;width:100%;min-height:48px;border:0;border-radius:12px;background:var(--pick);color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.gbtn[disabled]{opacity:.6;cursor:progress}
+.glink{margin-top:8px;padding:10px;border:0;background:none;color:var(--mute);font:inherit;font-size:15px;cursor:pointer}
+@media (max-width: 540px){ .stopedit{margin-left:0} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark" id="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 10h3M2 13h2M1.5 16h2.5"/><path d="M5 8.5h9.5V17H5z"/><path d="M14.5 11h3.3l2.7 3v3h-6z"/><circle cx="8" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/><circle cx="18.5" cy="5.5" r="3.8"/><path d="M18.5 3.7v1.9l1.3 1"/></svg><svg class="ring" viewBox="0 0 52 52"><circle cx="26" cy="26" r="23" pathLength="100"/></svg></div>
+    <div class="hdr" id="hdr"></div>
+  </header>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <button type="button" class="stopedit" id="stopEdit" hidden>Baigti redaguoti</button>
+  <div id="days"></div>
+</div>
+<div class="menu" id="menu" role="menu" hidden></div>
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Nuotrauka"><img id="lbImg" alt=""><div class="lbbar"><button type="button" id="lbDel" class="danger">Ištrinti nuotrauką</button><button type="button" id="lbClose">Uždaryti</button></div></div>
+<div class="gate" id="gate" hidden role="dialog" aria-modal="true" aria-label="Redagavimas">
+  <div class="gatebox">
+    <p class="gtitle">Redaguoti gali tik Karolis ir Indrė.</p>
+    <p class="gmsg" id="gateMsg"></p>
+    <button type="button" class="gbtn" id="gateGo">Prisijungti su Google</button>
+    <button type="button" class="glink" id="gateClose">Uždaryti</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden><span id="toastMsg" role="status" aria-live="polite"></span><button type="button" id="undo">Atšaukti</button></div>
+<script>
+(function(){
+  'use strict';
+  var VAN = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 10h3M2 13h2M1.5 16h2.5"/><path d="M5 8.5h9.5V17H5z"/><path d="M14.5 11h3.3l2.7 3v3h-6z"/><circle cx="8" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/><circle cx="18.5" cy="5.5" r="3.8"/><path d="M18.5 3.7v1.9l1.3 1"/></svg>';
+  var DOTS = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>';
+  var GRIP = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.8"/><circle cx="15" cy="5" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="19" r="1.8"/><circle cx="15" cy="19" r="1.8"/></svg>';
+  var CAM = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/><path d="M19 3v4M17 5h4"/></svg>';
+  var WJ = '\u2060';
+  var TYPES = ['time', 'stop', 'job', 'photos', 'text'];
+
+  /* ---------- default content (what the page shows until it is edited) ---------- */
+  var DEF = {
+    'texts/page.title': 'SAREK darbai',
+    'texts/page.lede': '',
+    'texts/col.time': 'Laikas', 'texts/col.stop': 'Kur', 'texts/col.job': 'Darbas', 'texts/col.photos': 'Nuotraukos'
+  };
+  var DEFAULT_LAYOUT = {
+    cols: [{ id:'time', type:'time' }, { id:'stop', type:'stop' }, { id:'job', type:'job' }, { id:'photos', type:'photos' }],
+    days: [{ id:'d1', kind:'pick' }],
+    rows: { d1: [] }
+  };
+
+  /* ---------- state ---------- */
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  var layout = clone(DEFAULT_LAYOUT);
+  var text = {};                         /* edits, by key; anything missing shows its default */
+  var editable = false, locked = true, db = null;
+  /* ---------- where the jobs live (Firebase) ---------- */
+  var FIREBASE = { apiKey: 'AIzaSyAkTUThwZra308Xiu5NB1wXERfdObcAWkw', authDomain: 'sarek-darbai.firebaseapp.com', projectId: 'sarek-darbai',
+    storageBucket: 'sarek-darbai.firebasestorage.app', messagingSenderId: '115315723867', appId: '1:115315723867:web:0e2bd84e22caea5efaf97e' };
+  var EDITOR_HASHES = ['a5da0978e9cd47e1da78cdfa8d1d50c4846ec9f307c4ba326ae36b82eaa86599', '5b948c283da1b7787c1e6c0ee7224a2eb0e6cad39bd13380ea6eafaace80ee7f'];   // Karolis, Indrė (SHA-256 of the Google email)
+  var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  var fb = null, fbApp = null, boardRef = null, authMod = null, auth = null, user = null, boardExists = null, seeded = false, seenKeys = {};
+  var BOARD = (location.hash.match(/[#&]b=([A-Za-z0-9]{10,64})/) || [])[1] || '';
+  try { if (BOARD) localStorage.setItem('sarek_board', BOARD); else BOARD = localStorage.getItem('sarek_board') || ''; } catch (e) {}
+  function imp(name){ return window.__FAKE_FB ? Promise.resolve(window.__FAKE_FB[name]) : import(SDK + name); }
+  function getFlag(){ try { return localStorage.getItem('sarek_ed') === '1'; } catch (e) { return false; } }
+  function setFlag(on){ try { localStorage.setItem('sarek_ed', on ? '1' : '0'); } catch (e) {} }
+  var FS = {
+    save: function(path){
+      if (path === 'layout/sheet') return fb.setDoc(boardRef, { layout: layoutData(), at: fb.serverTimestamp() }, { mergeFields: ['layout', 'at'] });
+      var o = {}; o[path] = val(path);
+      return fb.setDoc(boardRef, { t: o, at: fb.serverTimestamp() }, { merge: true });
+    },
+    addPic: function(id, doc, full){
+      return fb.setDoc(fb.doc(boardRef, 'full', id), { data: full }).then(function(){ return fb.setDoc(fb.doc(boardRef, 'pics', id), doc); });
+    },
+    delPic: function(id){
+      return fb.deleteDoc(fb.doc(boardRef, 'pics', id)).then(function(){ return fb.deleteDoc(fb.doc(boardRef, 'full', id)); });
+    },
+    full: function(id){
+      return fb.getDoc(fb.doc(boardRef, 'full', id)).then(function(d){ var x = d.exists() ? d.data() : null; return x && typeof x.data === 'string' ? x.data : null; }, function(){ return null; });
+    }
+  };
+  var els = {}, lbls = {};
+  var pics = {}, strips = {}, uploading = {};     /* photos: id -> {row, data, at, w, h} */
+  function has(o, k){ return Object.prototype.hasOwnProperty.call(o, k); }
+  function val(key){
+    if (has(text, key)) return text[key];
+    if (has(DEF, key)) return DEF[key];
+    if (key.indexOf('texts/col.') === 0) return 'Naujas stulpelis';
+    return '';
+  }
+
+  /* ---------- read-only text: phone numbers and addresses tappable ---------- */
+  function esc(s){ return s.replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var PHONE = /\+\d[\d ]{7,15}\d/g;
+  function linkPhones(h){ return h.replace(PHONE, function(m){ return '<a href="tel:' + m.replace(/ /g, '') + '">' + m + '</a>'; }); }
+  function rich(kind, s){
+    s = s || '';
+    if (kind === 'dt') {
+      return s.split('\n').map(function(line){
+        var h = esc(line);
+        if (/\bg\.\s*\d/.test(line)) return '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + encodeURIComponent(line.replace(/\u2060/g, '') + ', Vilnius') + '" target="_blank" rel="noopener">' + h + '</a>';
+        return linkPhones(h);
+      }).join('\n');
+    }
+    if (kind === 'ck' || kind === 'jb' || kind === 'tx') return linkPhones(esc(s));
+    return esc(s);
+  }
+
+  /* ---------- fields ---------- */
+  function fit(t){ if (t.tagName !== 'TEXTAREA') return; t.style.height = 'auto'; if (t.value) t.style.height = t.scrollHeight + 'px'; }
+  function fitAll(){ for (var k in els) els[k].forEach(fit); }
+  function timeCls(e, v){ if (e.dataset.kind === 't') e.classList.toggle('word', !/\d/.test(v)); }
+  function mk(kind, key, label, ph){
+    var e, v = val(key);
+    if (editable) {
+      e = document.createElement('textarea');
+      e.rows = 1; e.spellcheck = false; e.className = 'f ' + kind;
+      e.value = v; e.placeholder = ph || '';
+      e.setAttribute('aria-label', label);
+      e.addEventListener('input', onInput);
+      e.addEventListener('blur', onBlur);
+    } else {
+      e = document.createElement('div');
+      e.className = 'f ' + kind + ' ro';
+      e.innerHTML = rich(kind, v);
+    }
+    e.dataset.key = key; e.dataset.kind = kind;
+    (els[key] || (els[key] = [])).push(e);
+    timeCls(e, v);
+    return e;
+  }
+  function setEl(e, v){
+    if (e.tagName === 'TEXTAREA') { if (document.activeElement !== e && e.value !== v) { e.value = v; fit(e); } }
+    else e.innerHTML = rich(e.dataset.kind, v);
+    timeCls(e, v);
+  }
+  function lbl(colId){
+    var s = document.createElement('span');
+    s.className = 'lbl'; s.textContent = val('texts/col.' + colId);
+    (lbls[colId] || (lbls[colId] = [])).push(s);
+    return s;
+  }
+  function syncLabels(colId){ (lbls[colId] || []).forEach(function(s){ s.textContent = val('texts/col.' + colId); }); }
+  function kebab(label, fn){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'kbtn'; b.innerHTML = DOTS;
+    b.setAttribute('aria-label', label); b.setAttribute('aria-haspopup', 'menu'); b.setAttribute('aria-expanded', 'false');
+    b.addEventListener('click', function(ev){ ev.stopPropagation(); if (menuFor === b) { closeMenu(); return; } fn(b); });
+    return b;
+  }
+
+  /* ---------- render ---------- */
+  var MINW = { time:100, stop:110, job:140, photos:120, text:120 };
+  var drag = null, renderLater = false;
+  function render(){
+    if (drag) { renderLater = true; return; }
+    renderLater = false;
+    var ae = document.activeElement, fk = null, fi = 0, ss = 0, se = 0;
+    if (ae && ae.dataset && ae.dataset.key && els[ae.dataset.key]) { fk = ae.dataset.key; fi = els[fk].indexOf(ae); ss = ae.selectionStart; se = ae.selectionEnd; }
+    closeMenu();
+    els = {}; lbls = {}; strips = {};
+    document.body.classList.toggle('editable', editable);
+    var hdr = document.getElementById('hdr');
+    hdr.innerHTML = '';
+    hdr.appendChild(mk('title', 'texts/page.title', 'Puslapio pavadinimas', 'Pavadinimas'));
+    hdr.appendChild(mk('lede', 'texts/page.lede', 'Įžanga', 'Įžanga'));
+    var host = document.getElementById('days');
+    host.innerHTML = '';
+    layout.days.forEach(function(day){ host.appendChild(renderDay(day)); });
+    if (editable) {
+      var ad = document.createElement('button'); ad.type = 'button'; ad.className = 'adddaybtn'; ad.textContent = '+ Nauja diena';
+      ad.addEventListener('click', function(){ addDay(null, 1); });
+      host.appendChild(ad);
+    }
+    fitAll();
+    if (fk && els[fk]) {
+      var t = els[fk][Math.max(0, Math.min(fi, els[fk].length - 1))];
+      if (t && t.tagName === 'TEXTAREA') { t.focus({ preventScroll:true }); try { t.setSelectionRange(ss, se); } catch (e) {} }
+    }
+  }
+  function renderDay(day){
+    var sec = document.createElement('section');
+    sec.className = 'day ' + day.kind; sec.dataset.day = day.id;
+    var hd = document.createElement('div'); hd.className = 'dayhd'; hd.innerHTML = VAN;
+    var box = document.createElement('div');
+    box.appendChild(mk('dtitle', 'texts/' + day.id + '.title', 'Diena', 'Diena'));
+    box.appendChild(mk('dsub', 'texts/' + day.id + '.sub', 'Dienos pastaba', 'Pastaba'));
+    hd.appendChild(box);
+    if (editable) hd.appendChild(kebab('Dienos meniu', function(b){ dayMenu(b, day.id); }));
+    sec.appendChild(hd);
+
+    var cols = layout.cols;
+    var tw = document.createElement('div'); tw.className = 'tw';
+    var tb = document.createElement('table'); tb.className = 'run';
+    var cg = document.createElement('colgroup');
+    var minw = editable ? 44 : 0;
+    cols.forEach(function(c){ var col = document.createElement('col'); col.className = 'k-' + c.type; cg.appendChild(col); minw += MINW[c.type] || 140; });
+    if (editable) { var ca = document.createElement('col'); ca.className = 'k-act'; cg.appendChild(ca); }
+    tb.appendChild(cg);
+    tb.style.minWidth = minw + 'px';
+
+    var thead = document.createElement('thead'), hr = document.createElement('tr');
+    cols.forEach(function(c, ci){
+      var th = document.createElement('th'); th.scope = 'col';
+      th.className = 'k-' + c.type + (ci === 0 ? ' first' : '');
+      var w = document.createElement('div'); w.className = 'thw';
+      w.appendChild(mk('th', 'texts/col.' + c.id, 'Stulpelio pavadinimas', 'Stulpelis'));
+      if (editable) w.appendChild(kebab('Stulpelio meniu, ' + val('texts/col.' + c.id), function(b){ colMenu(b, c.id); }));
+      th.appendChild(w); hr.appendChild(th);
+    });
+    if (editable) { var tha = document.createElement('th'); tha.className = 'act'; hr.appendChild(tha); }
+    thead.appendChild(hr); tb.appendChild(thead);
+
+    var body = document.createElement('tbody');
+    var ids = layout.rows[day.id] || [];
+    ids.forEach(function(rid){ body.appendChild(renderRow(day, rid, cols)); });
+    if (!ids.length) {
+      var tr = document.createElement('tr'); tr.className = 'emptyrow';
+      var td = document.createElement('td'); td.colSpan = cols.length + (editable ? 1 : 0);
+      if (editable) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'addrow'; b.textContent = '+ Pridėti eilutę';
+        b.addEventListener('click', function(){ addRow(day.id, null, 1); });
+        td.appendChild(b);
+      } else td.textContent = 'Darbų nėra.';
+      tr.appendChild(td); body.appendChild(tr);
+    }
+    tb.appendChild(body); tw.appendChild(tb); sec.appendChild(tw);
+    if (editable && ids.length) {
+      var ft = document.createElement('div'); ft.className = 'dayfoot';
+      var ab = document.createElement('button'); ab.type = 'button'; ab.className = 'addrow'; ab.textContent = '+ Pridėti eilutę';
+      ab.addEventListener('click', function(){ addRow(day.id, null, 1); });
+      ft.appendChild(ab); sec.appendChild(ft);
+    }
+    return sec;
+  }
+  function renderRow(day, rid, cols){
+    var tr = document.createElement('tr'); tr.dataset.row = rid;
+    var name = (val('texts/' + rid + '.name') || val('texts/' + rid + '.time') || 'nauja eilutė').split('\n')[0];
+    cols.forEach(function(c, ci){
+      var td = document.createElement('td');
+      td.className = 'k-' + c.type + (ci === 0 ? ' first' : '');
+      var k = 'texts/' + rid + '.';
+      if (c.type === 'time') td.appendChild(mk('t', k + 'time', 'Laikas, ' + name, 'Laikas'));
+      else if (c.type === 'stop') {
+        td.appendChild(mk('nm', k + 'name', 'Vieta, ' + name, 'Vieta'));
+        td.appendChild(mk('dt', k + 'details', 'Adresas, telefonas, ' + name, 'Adresas, telefonas'));
+      } else if (c.type === 'job') {
+        td.appendChild(mk('jb', k + 'job', 'Darbas, ' + name, 'Darbas'));
+        td.appendChild(mk('ck', k + 'check', 'Pastabos, ' + name, 'Pastabos'));
+      } else if (c.type === 'photos') {
+        td.appendChild(lbl(c.id));
+        td.appendChild(mk('ph', 'photos/' + rid, 'Nuotraukos, ' + name, 'Ką nufotografuoti'));
+        td.appendChild(picStrip(rid));
+      } else {
+        td.appendChild(lbl(c.id));
+        td.appendChild(mk('tx', k + c.id, val('texts/col.' + c.id) + ', ' + name, 'Tekstas'));
+      }
+      tr.appendChild(td);
+    });
+    if (editable) {
+      var ta = document.createElement('td'); ta.className = 'act';
+      var aw = document.createElement('div'); aw.className = 'actw';
+      aw.appendChild(gripBtn(day.id, rid, name));
+      aw.appendChild(kebab('Eilutės meniu, ' + name, function(b){ rowMenu(b, day.id, rid); }));
+      ta.appendChild(aw); tr.appendChild(ta);
+    }
+    return tr;
+  }
+
+  /* ---------- menus ---------- */
+  var menu = document.getElementById('menu'), menuFor = null, menuY = 0;
+  function openMenu(btn, items){
+    closeMenu();
+    menu.innerHTML = '';
+    items.forEach(function(it){
+      var b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'menuitem'); b.textContent = it.label;
+      if (it.danger) b.className = 'danger';
+      if (it.disabled) b.disabled = true;
+      b.addEventListener('click', function(){ closeMenu(); it.run(); });
+      menu.appendChild(b);
+    });
+    menu.hidden = false; menuFor = btn; btn.setAttribute('aria-expanded', 'true');
+    var r = btn.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+    var x = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
+    var y = r.bottom + 4;
+    if (y + mh > window.innerHeight - 8) y = Math.max(8, r.top - mh - 4);
+    menu.style.left = x + 'px'; menu.style.top = y + 'px';
+    menuY = window.scrollY;
+    var first = menu.querySelector('button:not([disabled])');
+    if (first) first.focus({ preventScroll:true });
+  }
+  function closeMenu(){
+    if (menu.hidden) return;
+    menu.hidden = true;
+    if (menuFor) menuFor.setAttribute('aria-expanded', 'false');
+    menuFor = null;
+  }
+  document.addEventListener('pointerdown', function(ev){
+    if (menu.hidden) return;
+    if (menu.contains(ev.target) || (menuFor && menuFor.contains(ev.target))) return;
+    closeMenu();
+  }, true);
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && !menu.hidden) { var b = menuFor; closeMenu(); if (b) b.focus(); }
+  });
+  /* close only on a real scroll: a tap right after a flick, or a page that settles, keeps the menu open */
+  window.addEventListener('scroll', function(ev){ if (!menu.hidden && !menu.contains(ev.target) && Math.abs(window.scrollY - menuY) > 60) closeMenu(); }, true);
+  window.addEventListener('resize', closeMenu);
+
+  function rowMenu(btn, dayId, rid){
+    openMenu(btn, [
+      { label:'Pridėti eilutę aukščiau', run:function(){ addRow(dayId, rid, 0); } },
+      { label:'Pridėti eilutę žemiau', run:function(){ addRow(dayId, rid, 1); } },
+      { label:'Ištrinti eilutę', danger:true, run:function(){ delRow(dayId, rid); } }
+    ]);
+  }
+  function colMenu(btn, cid){
+    openMenu(btn, [
+      { label:'Pridėti stulpelį kairėje', run:function(){ addCol(cid, 0); } },
+      { label:'Pridėti stulpelį dešinėje', run:function(){ addCol(cid, 1); } },
+      { label:'Ištrinti stulpelį', danger:true, disabled: layout.cols.length < 2, run:function(){ delCol(cid); } }
+    ]);
+  }
+
+  function dayMenu(btn, dayId){
+    var k = dayKind(dayId);
+    openMenu(btn, [
+      { label:'Pridėti dieną aukščiau', run:function(){ addDay(dayId, 0); } },
+      { label:'Pridėti dieną žemiau', run:function(){ addDay(dayId, 1); } },
+      { label: k === 'ret' ? 'Oranžinė spalva' : 'Mėlyna spalva', run:function(){ setKind(dayId, k === 'ret' ? 'pick' : 'ret'); } },
+      { label:'Ištrinti dieną', danger:true, disabled: layout.days.length < 2, run:function(){ delDay(dayId); } }
+    ]);
+  }
+
+  /* ---------- rows, columns and days ---------- */
+  function newId(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function colIndex(cid){ for (var i = 0; i < layout.cols.length; i++) if (layout.cols[i].id === cid) return i; return -1; }
+  function focusRow(rid){
+    var tr = document.querySelector('tr[data-row="' + rid + '"]');
+    var t = tr && tr.querySelector('textarea');
+    if (t) { t.focus({ preventScroll:true }); t.scrollIntoView({ block:'nearest' }); }
+  }
+  function addRow(dayId, refId, after){
+    var list = layout.rows[dayId], i = refId ? list.indexOf(refId) : list.length - 1;
+    var id = newId('r');
+    list.splice(i < 0 ? list.length : i + (after ? 1 : 0), 0, id);
+    saveLayout(); render(); focusRow(id);
+  }
+  function delRow(dayId, rid){
+    var list = layout.rows[dayId], i = list.indexOf(rid);
+    if (i < 0) return;
+    list.splice(i, 1); saveLayout(); render();
+    toast('Eilutė ištrinta.', function(){
+      var l = layout.rows[dayId];
+      if (l.indexOf(rid) < 0) { l.splice(Math.min(i, l.length), 0, rid); saveLayout(); render(); focusRow(rid); }
+    });
+  }
+  function addCol(refId, after){
+    var i = colIndex(refId), id = newId('c');
+    layout.cols.splice(i < 0 ? layout.cols.length : i + (after ? 1 : 0), 0, { id:id, type:'text' });
+    saveLayout(); render();
+    var t = els['texts/col.' + id] && els['texts/col.' + id][0];
+    if (t && t.tagName === 'TEXTAREA') { t.focus({ preventScroll:true }); t.select(); t.scrollIntoView({ block:'nearest', inline:'nearest' }); }
+  }
+  function delCol(cid){
+    if (layout.cols.length < 2) return;
+    var i = colIndex(cid); if (i < 0) return;
+    var c = layout.cols[i];
+    layout.cols.splice(i, 1); saveLayout(); render();
+    toast('Stulpelis ištrintas.', function(){
+      if (colIndex(c.id) < 0) { layout.cols.splice(Math.min(i, layout.cols.length), 0, c); saveLayout(); render(); }
+    });
+  }
+
+  function dayIndex(id){ for (var i = 0; i < layout.days.length; i++) if (layout.days[i].id === id) return i; return -1; }
+  function addDay(refId, after){
+    var i = refId ? dayIndex(refId) : layout.days.length - 1, id = newId('d');
+    layout.days.splice(i < 0 ? layout.days.length : i + (after ? 1 : 0), 0, { id:id, kind:'pick' });
+    layout.rows[id] = [];
+    var key = 'texts/' + id + '.title';
+    text[key] = 'Nauja diena'; schedule(key, 0);
+    saveLayout(); render();
+    var t = els[key] && els[key][0];
+    if (t && t.tagName === 'TEXTAREA') { t.focus({ preventScroll:true }); t.select(); t.scrollIntoView({ block:'center' }); }
+  }
+  function setKind(dayId, kind){ var i = dayIndex(dayId); if (i < 0) return; layout.days[i].kind = kind; saveLayout(); render(); }
+  function delDay(dayId){
+    if (layout.days.length < 2) return;
+    var i = dayIndex(dayId); if (i < 0) return;
+    var d = layout.days[i], rows = (layout.rows[dayId] || []).slice();
+    layout.days.splice(i, 1); delete layout.rows[dayId]; saveLayout(); render();
+    toast('Diena ištrinta.', function(){
+      if (dayIndex(d.id) < 0) { layout.days.splice(Math.min(i, layout.days.length), 0, d); layout.rows[d.id] = rows; saveLayout(); render(); }
+    });
+  }
+
+  /* ---------- drag rows (mouse, finger, pen); arrow keys on the handle also move ---------- */
+  function gripBtn(dayId, rid, name){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'grip'; b.innerHTML = GRIP;
+    b.setAttribute('aria-label', 'Perkelti eilutę, ' + name + '. Tempkite arba naudokite rodykles.');
+    b.addEventListener('pointerdown', function(ev){ startDrag(ev, b, dayId, rid); });
+    b.addEventListener('keydown', function(ev){
+      if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return;
+      ev.preventDefault();
+      var l = layout.rows[dayId], i = l.indexOf(rid), j = i + (ev.key === 'ArrowUp' ? -1 : 1);
+      if (i < 0 || j < 0 || j >= l.length) return;
+      l.splice(i, 1); l.splice(j, 0, rid); saveLayout(); render();
+      var g = document.querySelector('tr[data-row="' + rid + '"] .grip'); if (g) g.focus();
+    });
+    b.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+    return b;
+  }
+  function dayKind(dayId){ for (var i = 0; i < layout.days.length; i++) if (layout.days[i].id === dayId) return layout.days[i].kind; return 'pick'; }
+  function startDrag(ev, handle, dayId, rid){
+    if (locked || drag || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+    ev.preventDefault();
+    closeMenu();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    var tr = handle.closest('tr');
+    var ghost = document.createElement('div');
+    ghost.className = 'ghost' + (dayKind(dayId) === 'ret' ? ' ret' : '');
+    var label = (clean(val('texts/' + rid + '.time')) + '   ' + clean(val('texts/' + rid + '.name'))).replace(/\n[\s\S]*/, '').trim();
+    ghost.textContent = label || 'Eilutė';
+    var line = document.createElement('div'); line.className = 'dropline';
+    document.body.appendChild(ghost); document.body.appendChild(line);
+    document.body.classList.add('is-dragging');
+    tr.classList.add('dragging');
+    drag = { id:rid, from:dayId, tr:tr, ghost:ghost, line:line, handle:handle, pid:ev.pointerId, touch: ev.pointerType !== 'mouse',
+             x:ev.clientX, y:ev.clientY, target:null, raf:0 };
+    try { handle.setPointerCapture(ev.pointerId); } catch (e) {}
+    handle.addEventListener('pointermove', onDragMove);
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', cancelDrag);
+    placeGhost(); findTarget();
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+  function onDragMove(ev){
+    if (!drag || ev.pointerId !== drag.pid) return;
+    ev.preventDefault();
+    drag.x = ev.clientX; drag.y = ev.clientY;
+    placeGhost(); findTarget();
+  }
+  function placeGhost(){
+    var gx = Math.max(8, Math.min(window.innerWidth - drag.ghost.offsetWidth - 8, drag.x - (drag.touch ? drag.ghost.offsetWidth / 2 : -14)));
+    var gy = drag.y - (drag.touch ? 64 : 16);
+    drag.ghost.style.transform = 'translate(' + gx + 'px,' + gy + 'px)';
+  }
+  function findTarget(){
+    var y = drag.y, best = null;
+    [].forEach.call(document.querySelectorAll('section.day'), function(sec){
+      var body = sec.querySelector('tbody'); if (!body) return;
+      var br = body.getBoundingClientRect();
+      var dist = y < br.top ? br.top - y : (y > br.bottom ? y - br.bottom : 0);
+      if (best && dist >= best.dist) return;
+      var rows = [].filter.call(body.querySelectorAll('tr[data-row]'), function(t){ return t !== drag.tr; });
+      var idx = 0;
+      for (var i = 0; i < rows.length; i++) { var rr = rows[i].getBoundingClientRect(); if (y > rr.top + rr.height / 2) idx = i + 1; }
+      var ly = !rows.length ? br.top + 4 : (idx >= rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : rows[idx].getBoundingClientRect().top);
+      best = { dist:dist, day:sec.dataset.day, idx:idx, ly:ly, left:br.left, width:br.width };
+    });
+    drag.target = best;
+    if (!best) { drag.line.style.display = 'none'; return; }
+    drag.line.style.display = 'block';
+    drag.line.className = 'dropline' + (dayKind(best.day) === 'ret' ? ' ret' : '');
+    drag.line.style.top = best.ly + 'px'; drag.line.style.left = (best.left + 8) + 'px'; drag.line.style.width = Math.max(0, best.width - 16) + 'px';
+  }
+  function autoScroll(){
+    if (!drag) return;
+    var H = window.innerHeight, edge = 80, v = 0;
+    if (drag.y < edge) v = -Math.ceil((edge - drag.y) / 5);
+    else if (drag.y > H - edge) v = Math.ceil((drag.y - (H - edge)) / 5);
+    if (v) { window.scrollBy(0, v); findTarget(); }
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+  function stopDrag(){
+    var d = drag; if (!d) return null;
+    cancelAnimationFrame(d.raf);
+    d.handle.removeEventListener('pointermove', onDragMove);
+    d.handle.removeEventListener('pointerup', endDrag);
+    d.handle.removeEventListener('pointercancel', cancelDrag);
+    try { d.handle.releasePointerCapture(d.pid); } catch (e) {}
+    d.ghost.remove(); d.line.remove();
+    document.body.classList.remove('is-dragging');
+    d.tr.classList.remove('dragging');
+    drag = null;
+    return d;
+  }
+  function endDrag(ev){
+    if (!drag || ev.pointerId !== drag.pid) return;
+    var d = stopDrag(), t = d.target;
+    var src = layout.rows[d.from], i = src.indexOf(d.id);
+    if (!t || i < 0 || (t.day === d.from && t.idx === i)) { if (renderLater) render(); return; }
+    src.splice(i, 1);
+    layout.rows[t.day].splice(Math.min(t.idx, layout.rows[t.day].length), 0, d.id);
+    saveLayout(); render();
+    var row = document.querySelector('tr[data-row="' + d.id + '"]');
+    if (row) { row.classList.add('moved'); setTimeout(function(){ row.classList.remove('moved'); }, 1000); }
+  }
+  function cancelDrag(){ stopDrag(); if (renderLater) render(); }
+
+  /* ---------- photos: shrunk on the phone, kept in the page's database ---------- */
+  function picsFor(rid){
+    return Object.keys(pics).filter(function(k){ return pics[k].row === rid; })
+      .map(function(k){ return { id:k, p:pics[k] }; }).sort(function(a, b){ return a.p.at - b.p.at; });
+  }
+  function picStrip(rid){
+    var w = document.createElement('div'); w.className = 'pics';
+    strips[rid] = w; fillStrip(rid);
+    return w;
+  }
+  function fillStrip(rid){
+    var w = strips[rid]; if (!w) return;
+    w.innerHTML = '';
+    var list = picsFor(rid);
+    list.forEach(function(x, i){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pic'; b.setAttribute('aria-label', 'Nuotrauka ' + (i + 1) + ' iš ' + list.length);
+      var im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.src = x.p.th;
+      b.appendChild(im);
+      b.addEventListener('click', function(){ openPic(x.id); });
+      w.appendChild(b);
+    });
+    Object.keys(uploading).forEach(function(k){
+      if (uploading[k] !== rid) return;
+      var s = document.createElement('div'); s.className = 'pic busy'; s.setAttribute('aria-label', 'Įkeliama nuotrauka'); w.appendChild(s);
+    });
+    if (editable && !locked) {
+      var a = document.createElement('button');
+      a.type = 'button'; a.className = 'pic add'; a.innerHTML = CAM; a.setAttribute('aria-label', 'Pridėti nuotraukų');
+      a.addEventListener('click', function(){ pickPhotos(rid); });
+      w.appendChild(a);
+    }
+    w.hidden = !w.children.length;
+  }
+  function pickPhotos(rid){
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.style.display = 'none';
+    inp.addEventListener('change', function(){
+      var files = [].slice.call(inp.files || []); inp.remove();
+      files.forEach(function(f){ addPic(rid, f); });
+    });
+    document.body.appendChild(inp); inp.click();
+  }
+  function shrink(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){
+        URL.revokeObjectURL(url);
+        var W0 = img.naturalWidth, H0 = img.naturalHeight;
+        function draw(max){
+          var k = Math.min(1, max / Math.max(W0, H0)), w = Math.max(1, Math.round(W0 * k)), h = Math.max(1, Math.round(H0 * k));
+          var c = document.createElement('canvas'); c.width = w; c.height = h;
+          var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+          return c;
+        }
+        var th = draw(360).toDataURL('image/jpeg', 0.7), dims = [1600, 1400, 1200, 1000, 820], qs = [0.8, 0.7, 0.6, 0.5];
+        for (var i = 0; i < dims.length; i++) {
+          var c = draw(dims[i]);
+          for (var j = 0; j < qs.length; j++) { var d = c.toDataURL('image/jpeg', qs[j]); if (d.length <= 700000) { res({ data:d, th:th, w:c.width, h:c.height }); return; } }
+        }
+        rej(new Error('big'));
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function addPic(rid, file){
+    if (!db || locked) return;
+    var tmp = newId('u'); uploading[tmp] = rid; fillStrip(rid);
+    say('Įkeliama nuotrauka\u2026');
+    var id = null;
+    shrink(file).then(function(r){
+      id = newId('p');
+      var doc = { row:rid, th:r.th, w:r.w, h:r.h, at:Date.now() };
+      pics[id] = doc; delete uploading[tmp]; fillStrip(rid);
+      return FS.addPic(id, doc, r.data);
+    }).then(function(){ if (!Object.keys(uploading).length) say('Nuotrauka išsaugota ' + hhmm() + '.', 'ok'); }, function(e){
+      delete uploading[tmp]; if (id) delete pics[id]; fillStrip(rid);
+      var c = e && e.code;
+      say(c === 'resource-exhausted' ? 'Nebėra vietos nuotraukoms. Ištrinkite senų.' :
+          (e && e.message === 'decode') ? 'Nepavyko atidaryti nuotraukos. Bandykite JPG arba PNG.' : 'Nepavyko įkelti nuotraukos. Bandykite dar kartą.', 'err');
+    });
+  }
+  var lb = document.getElementById('lb'), lbImg = document.getElementById('lbImg'), lbDel = document.getElementById('lbDel'), lbId = null, lbFrom = null;
+  function openPic(id){
+    if (!pics[id]) return;
+    lbId = id; lbFrom = document.activeElement;
+    lbImg.src = pics[id].th; lbDel.hidden = !(editable && !locked);
+    lb.hidden = false; document.getElementById('lbClose').focus();
+    FS.full(id).then(function(src){ if (src && lbId === id) lbImg.src = src; });
+  }
+  function closePic(){ if (lb.hidden) return; lb.hidden = true; lbImg.removeAttribute('src'); lbId = null; if (lbFrom && lbFrom.focus) lbFrom.focus({ preventScroll:true }); }
+  document.getElementById('lbClose').addEventListener('click', closePic);
+  lb.addEventListener('click', function(ev){ if (ev.target === lb) closePic(); });
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && !lb.hidden) closePic(); });
+  lbDel.addEventListener('click', function(){
+    var id = lbId, p = pics[id]; if (!p || !db) return;
+    closePic(); delete pics[id]; fillStrip(p.row);
+    var keep = null;
+    FS.full(id).then(function(f){ keep = f; return FS.delPic(id); }).then(function(){}, function(){ pics[id] = p; fillStrip(p.row); say('Nepavyko ištrinti nuotraukos.', 'err'); });
+    toast('Nuotrauka ištrinta.', function(){ pics[id] = p; fillStrip(p.row); FS.addPic(id, p, keep || p.th).then(function(){ say('Nuotrauka grąžinta ' + hhmm() + '.', 'ok'); }, function(){ say('Nepavyko grąžinti nuotraukos.', 'err'); }); });
+  });
+  function onPic(id, d, removed){
+    var old = pics[id] ? pics[id].row : null;
+    if (removed) delete pics[id];
+    else if (d && typeof d.row === 'string' && typeof d.th === 'string' && d.th.indexOf('data:image/') === 0) pics[id] = { row:d.row, th:d.th, w:d.w || 0, h:d.h || 0, at:d.at || 0 };
+    else return;
+    if (old && old !== (pics[id] && pics[id].row)) fillStrip(old);
+    if (pics[id]) fillStrip(pics[id].row);
+    if (removed && lbId === id) closePic();
+  }
+
+  /* ---------- undo toast ---------- */
+  var toastEl = document.getElementById('toast'), toastTimer = 0, undoFn = null;
+  function toast(msg, undo){
+    document.getElementById('toastMsg').textContent = msg;
+    undoFn = undo; toastEl.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, 8000);
+  }
+  function hideToast(){ toastEl.hidden = true; undoFn = null; }
+  document.getElementById('undo').addEventListener('click', function(){ var f = undoFn; hideToast(); if (f) f(); });
+
+  /* ---------- status ---------- */
+  var statusEl = document.getElementById('status');
+  function say(t, state){ statusEl.textContent = t; statusEl.dataset.state = state || ''; }
+  function hhmm(){ var d = new Date(); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+
+  /* ---------- saving: one write at a time per document ---------- */
+  var pend = {};
+  function layoutData(){
+    var rows = {};
+    layout.days.forEach(function(d){ rows[d.id] = (layout.rows[d.id] || []).slice(); });
+    return { cols: layout.cols.map(function(c){ return { id:c.id, type:c.type }; }), days: layout.days.map(function(d){ return { id:d.id, kind:d.kind }; }), rows: rows, at: Date.now() };
+  }
+  function dataFor(path){ return path === 'layout/sheet' ? layoutData() : { text: val(path), at: Date.now() }; }
+  function busy(except){ for (var k in pend) if (k !== except && (pend[k].dirty || pend[k].inflight)) return true; return false; }
+  function schedule(path, ms){
+    var p = pend[path] || (pend[path] = { timer:0, inflight:false, dirty:false, tries:0 });
+    p.dirty = true; clearTimeout(p.timer);
+    p.timer = setTimeout(function(){ flush(path); }, ms == null ? 700 : ms);
+  }
+  function flush(path){
+    var p = pend[path];
+    if (!p || !p.dirty || locked || !db || p.inflight) return;
+    clearTimeout(p.timer); p.dirty = false; p.inflight = true;
+    say('Saugoma\u2026');
+    FS.save(path).then(function(){
+      p.tries = 0;
+      if (!p.dirty && !busy(path)) say('Išsaugota ' + hhmm() + '.', 'ok');
+    }, function(e){
+      var c = e && e.code;
+      if (c === 'permission-denied' || c === 'unauthenticated') {
+        lock('Šiame įrenginyje redaguoti negalima.');
+      } else if (p.tries < 1) {
+        p.tries++; p.dirty = true; say('Nepavyko išsaugoti. Bandau dar kartą\u2026', 'err');
+        clearTimeout(p.timer); p.timer = setTimeout(function(){ flush(path); }, 1500 + Math.random() * 1500);
+      } else {
+        p.tries = 0; p.dirty = true; say('Nepavyko išsaugoti. Pakeiskite ką nors, ir bus bandoma vėl.', 'err');
+      }
+    }).then(function(){
+      p.inflight = false;
+      if (p.dirty && !locked && p.tries === 0) schedule(path, 400);
+    });
+  }
+  function saveLayout(){ schedule('layout/sheet', 0); }
+  function onInput(ev){
+    var t = ev.target, key = t.dataset.key;
+    if (locked) return;
+    text[key] = t.value; fit(t); timeCls(t, t.value);
+    (els[key] || []).forEach(function(o){ if (o !== t) setEl(o, t.value); });
+    if (key.indexOf('texts/col.') === 0) syncLabels(key.slice(10));
+    say('Saugoma\u2026'); schedule(key);
+  }
+  function onBlur(ev){ var key = ev.target.dataset.key, p = pend[key]; if (p && p.dirty && !locked) flush(key); }
+
+  /* ---------- incoming changes ---------- */
+  function apply(key, v){
+    var p = pend[key];
+    if (p && (p.dirty || p.inflight)) return;
+    var list = els[key] || [];
+    for (var i = 0; i < list.length; i++) if (list[i] === document.activeElement) return;
+    if (v === null) { if (!has(text, key)) return; delete text[key]; }
+    else { if (has(text, key) && text[key] === v) return; text[key] = v; }
+    var now = val(key);
+    list.forEach(function(e){ setEl(e, now); });
+    if (key.indexOf('texts/col.') === 0) syncLabels(key.slice(10));
+  }
+  var ID = /^[A-Za-z0-9-]{1,40}$/;
+  function sanitize(d){
+    if (!d || !Array.isArray(d.cols) || !d.rows || typeof d.rows !== 'object') return null;
+    var seen = {}, cols = [];
+    d.cols.forEach(function(c){
+      if (c && typeof c.id === 'string' && ID.test(c.id) && !seen[c.id] && TYPES.indexOf(c.type) >= 0) { seen[c.id] = 1; cols.push({ id:c.id, type:c.type }); }
+    });
+    if (!cols.length) return null;
+    var days = [], ds = {};
+    (Array.isArray(d.days) ? d.days : []).forEach(function(x){
+      if (x && typeof x.id === 'string' && ID.test(x.id) && !ds[x.id]) { ds[x.id] = 1; days.push({ id:x.id, kind: x.kind === 'ret' ? 'ret' : 'pick' }); }
+    });
+    if (!days.length) return null;
+    var rows = {}, s = {};
+    days.forEach(function(day){
+      var src = Array.isArray(d.rows[day.id]) ? d.rows[day.id] : [];
+      rows[day.id] = src.filter(function(id){ if (typeof id === 'string' && ID.test(id) && !s[id]) { s[id] = 1; return true; } return false; });
+    });
+    return { cols:cols, days:days, rows:rows };
+  }
+  function onLayout(d){
+    var p = pend['layout/sheet'];
+    if (p && (p.dirty || p.inflight)) return;
+    var L = d ? sanitize(d) : clone(DEFAULT_LAYOUT);
+    if (!L || JSON.stringify(L) === JSON.stringify(layout)) return;
+    if (drag) { cancelDrag(); }
+    layout = L; render();
+  }
+  function todayLt(){
+    var d = new Date(), WD = ['sekmadienis','pirmadienis','antradienis','trečiadienis','ketvirtadienis','penktadienis','šeštadienis'];
+    var MO = ['sausio','vasario','kovo','balandžio','gegužės','birželio','liepos','rugpjūčio','rugsėjo','spalio','lapkričio','gruodžio'];
+    var w = WD[d.getDay()]; return w.charAt(0).toUpperCase() + w.slice(1) + ', ' + MO[d.getMonth()] + ' ' + d.getDate() + ' d.';
+  }
+  function seedIfEmpty(){                     /* a brand-new list: first day = today */
+    if (boardExists !== false || seeded || !editable) return;
+    seeded = true;
+    var o = {}; o['texts/d1.title'] = todayLt(); text['texts/d1.title'] = o['texts/d1.title'];
+    fb.setDoc(boardRef, { layout: layoutData(), t: o, at: fb.serverTimestamp() }, { merge: true });
+    render();
+  }
+  function listenBoard(){
+    fb.onSnapshot(boardRef, { includeMetadataChanges: true }, function(snap){
+      var d = snap.exists() ? snap.data() : null;
+      if (!snap.metadata.fromCache) { boardExists = !!d; seedIfEmpty(); }
+      onLayout(d && d.layout ? d.layout : null);
+      var t = (d && d.t) || {}, k;
+      for (k in t) if (typeof t[k] === 'string') apply(k, t[k]);
+      for (k in seenKeys) if (!has(t, k)) apply(k, null);
+      seenKeys = t;
+      if (!editable) live(snap.metadata.fromCache);
+    }, function(){ say('Nebeatsinaujina. Perkraukite puslapį.', 'err'); });
+  }
+  function listenPics(){
+    fb.onSnapshot(fb.collection(boardRef, 'pics'), function(snap){
+      snap.docChanges().forEach(function(ch){ onPic(ch.doc.id, ch.type === 'removed' ? null : ch.doc.data(), ch.type === 'removed'); });
+    }, function(){});
+  }
+
+  /* ---------- modes ---------- */
+  var lastLive = 0;
+  function live(fromCache){
+    if (!db || editable) return;
+    if (fromCache === undefined) fromCache = !lastLive;
+    if (fromCache) say(lastLive ? 'Nėra ryšio. Rodoma ' + lastLive + ' versija.' : 'Jungiamasi\u2026');
+    else { lastLive = hhmm(); say('Gyvai. Atnaujinta ' + lastLive + '.', 'live'); }
+  }
+  function lock(msg){ locked = true; document.getElementById('stopEdit').hidden = true; if (editable) { editable = false; render(); } if (msg) say(msg, 'ro'); else live(); }
+  function unlock(){ locked = false; editable = true; document.getElementById('stopEdit').hidden = false; render(); seedIfEmpty(); say('Viskas išsaugoma rašant. \u22ef mygtukai prideda arba ištrina eilutes, stulpelius ir dienas.'); }
+
+  function clean(s){
+    return String(s || '').replace(/\u2060/g, '').replace(/\u2011/g, '-').replace(/\r/g, '').replace(/[\uD800-\uDFFF]/g, '')
+      .replace(PHONE, function(m){ return m.replace(/ /g, '\u00a0'); });
+  }
+
+  /* ---------- start ---------- */
+  render();
+  var rz = 0;
+  window.addEventListener('resize', function(){ cancelAnimationFrame(rz); rz = requestAnimationFrame(fitAll); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+
+  /* ---------- who may edit: hidden way in, then Google sign-in ---------- */
+  function sha256hex(s){ return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function(b){ return Array.prototype.map.call(new Uint8Array(b), function(x){ return ('0' + x.toString(16)).slice(-2); }).join(''); }); }
+  function checkEditor(u){ if (!u || !u.email) return Promise.resolve(false); return sha256hex(String(u.email).trim().toLowerCase()).then(function(x){ return EDITOR_HASHES.indexOf(x) >= 0; }, function(){ return false; }); }
+  var userIsEditor = false;
+  var authReady = null;
+  function startAuth(){
+    if (authReady) return authReady;
+    authReady = imp('firebase-auth.js').then(function(a){
+      authMod = a; auth = a.getAuth(fbApp);
+      return new Promise(function(res){
+        var first = true;
+        a.onAuthStateChanged(auth, function(u){
+          user = u;
+          checkEditor(u).then(function(ok){
+            userIsEditor = ok;
+            if (ok && getFlag()) { if (!editable) unlock(); }
+            else if (editable) lock('');
+            if (first) { first = false; res(); }
+          });
+        });
+      });
+    });
+    return authReady;
+  }
+  var gate = document.getElementById('gate'), gateMsg = document.getElementById('gateMsg'), gateGo = document.getElementById('gateGo');
+  function openGate(){
+    if (!fbApp) return;
+    startAuth().then(function(){
+      if (userIsEditor) { if (editable) { setFlag(0); lock(''); } else { setFlag(1); unlock(); } return; }
+      gateMsg.textContent = user ? 'Ši Google paskyra negali redaguoti.' : '';
+      gateGo.disabled = false; gate.hidden = false; gateGo.focus();
+    }, function(){ say('Nepavyko atidaryti prisijungimo.', 'err'); });
+  }
+  gateGo.addEventListener('click', function(){
+    gateGo.disabled = true; gateMsg.textContent = '';
+    authMod.signInWithPopup(auth, new authMod.GoogleAuthProvider()).then(function(r){
+      return checkEditor(r.user).then(function(ok){
+        userIsEditor = ok;
+        if (ok) { setFlag(1); gate.hidden = true; if (!editable) unlock(); }
+        else { gateMsg.textContent = 'Ši Google paskyra negali redaguoti.'; authMod.signOut(auth); gateGo.disabled = false; }
+      });
+    }, function(e){
+      var c = e && e.code; gateGo.disabled = false;
+      gateMsg.textContent = c === 'auth/popup-blocked' ? 'Naršyklė užblokavo langą. Leiskite iššokančius langus.' :
+        c === 'auth/unauthorized-domain' ? 'Šis adresas dar neleistas Firebase nustatymuose.' :
+        c === 'auth/operation-not-allowed' ? 'Google prisijungimas dar neįjungtas Firebase nustatymuose.' :
+        (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') ? '' : 'Nepavyko prisijungti.';
+    });
+  });
+  document.getElementById('gateClose').addEventListener('click', function(){ gate.hidden = true; });
+  document.getElementById('stopEdit').addEventListener('click', function(){ setFlag(0); lock(''); });
+  /* PC: type "sarek" anywhere outside a text box */
+  var typed = '', typedAt = 0;
+  document.addEventListener('keydown', function(ev){
+    var t = ev.target;
+    if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.isContentEditable)) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || !ev.key || ev.key.length !== 1) return;
+    var now = Date.now(); if (now - typedAt > 2500) typed = ''; typedAt = now;
+    typed = (typed + ev.key.toLowerCase()).slice(-5);
+    if (typed === 'sarek') { typed = ''; openGate(); }
+  });
+  /* phone / iPad: hold the van logo for 10 seconds (a ring shows after 2) */
+  var mark = document.getElementById('mark'), holdT = 0, showT = 0;
+  function holdStop(){ clearTimeout(holdT); clearTimeout(showT); mark.classList.remove('holding'); }
+  mark.addEventListener('pointerdown', function(ev){
+    holdStop();
+    showT = setTimeout(function(){ mark.classList.add('holding'); }, 2000);
+    holdT = setTimeout(function(){ holdStop(); openGate(); }, 10000);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(n){ mark.addEventListener(n, holdStop); });
+  mark.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+
+  window.addEventListener('hashchange', function(){ location.reload(); });
+  if (!FIREBASE.apiKey) { lock('Puslapis dar neprijungtas prie duomenų bazės.'); return; }
+  if (!BOARD) { lock('Atidarykite visą nuorodą, kurią gavote.'); return; }
+  say('Jungiamasi\u2026');
+  Promise.all([imp('firebase-app.js'), imp('firebase-firestore.js')]).then(function(m){
+    fb = Object.assign({}, m[0], m[1]);
+    fbApp = fb.initializeApp(FIREBASE);
+    var store;
+    try { store = fb.initializeFirestore(fbApp, { localCache: fb.persistentLocalCache({ tabManager: fb.persistentMultipleTabManager() }) }); }
+    catch (e) { store = fb.getFirestore(fbApp); }
+    boardRef = fb.doc(store, 'boards', BOARD);
+    db = FS;
+    listenBoard(); listenPics();
+    if (getFlag()) startAuth(); else lock('');
+  }, function(){ lock('Nepavyko prisijungti. Patikrinkite internetą ir perkraukite puslapį.'); });
+})();
+</script>
+</body>
+</html>
